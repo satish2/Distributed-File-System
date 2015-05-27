@@ -1,0 +1,41 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
+apply plugin: 'maven'
+group = 'fuse-jna'
+version = '1.0.3'
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	compile 'net.java.dev.jna:jna:4.1.0'
+	compile "org.codehaus.groovy:groovy-all:2.1.5"
+}
+
+task uberJar(type: Jar) {
+	description = 'Make JAR with all the dependencies included'
+	classifier = 'uber'
+	dependsOn configurations.runtime
+	from sourceSets.main.output
+	from { configurations.runtime.collect { it.directory ? it : zipTree(it) } }
+}
+
+task sourceJar(type: Jar) {
+    description = 'Make JAR of all the source files'
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourceJar
+            artifact uberJar
+        }
+    }
+}
